@@ -5,7 +5,8 @@
     "use strict";
     app.addModule("validateUtils", {
         validateRequired: validateRequired,
-        validateEmail: validateEmail
+        validateEmail: validateEmail,
+        validateUnique: validateUnique
     });
 
     var emailValidationPattern = /\w+@\w+\.\w+/;
@@ -16,5 +17,9 @@
 
     function validateEmail(email) {
         return emailValidationPattern.test(email);
+    }
+
+    function validateUnique(array, item, field) {
+
     }
 })();

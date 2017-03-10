@@ -10,8 +10,8 @@
     var arrayUtils = app.getModule("arrayUtils");
     var userModule = app.getModule("user");
 
-    function createUsersList(usersList, onUserDeleted, onAssignChanged) {
-        var controller =  new CreateController(usersList, onUserDeleted, onAssignChanged);
+    function createUsersList(usersList, onUserDeleted, onAssignChange) {
+        var controller =  new CreateController(usersList, onUserDeleted, onAssignChange);
         return createView(controller);
     }
 
@@ -22,8 +22,8 @@
             <div class="usersList">\
                 <div>\
                     Sort by name:\
-                        <button class="sortByUserNameAscending" type="button">A...z</button>\
-                        <button class="sortByUserNameDescending" type="button">Z...a</button>\
+                    <button class="sortByNameAscending" type="button">A...z</button>\
+                    <button class="sortByNameDescending" type="button">Z...a</button>\
                 </div>\
                 <ul></ul>\
             </div>'
@@ -31,11 +31,11 @@
 
         var $listContainer = $viewTemplate.find("ul");
 
-        $viewTemplate.find(".sortByUserNameAscending").on("click", function() {
+        $viewTemplate.find(".sortByNameAscending").on("click", function() {
             controller.sortUsers("name", "ascending");
         });
 
-        $viewTemplate.find(".sortByUserNameDescending").on("click", function() {
+        $viewTemplate.find(".sortByNameDescending").on("click", function() {
             controller.sortUsers("name", "descending");
         });
 
@@ -46,20 +46,19 @@
         function buildUsersList() {
             $listContainer.empty();
             usersList.forEach(function (user) {
-                $listContainer.append(userModule.createUser(user, controller.deleteUser.bind(controller), controller.onAssignChanged));
+                $listContainer.append(userModule.createUser(user, controller.deleteUser.bind(controller), controller.onAssignChange));
             })
         }
 
         return $viewTemplate;
     }
 
-    function CreateController(usersList, onUserDeleted, onAssignChanged) {
+    function CreateController(usersList, onUserDeleted, onAssignChange) {
         this._usersList = usersList || [];
         this._onUserDeleted = onUserDeleted || $.noop;
-        this.onAssignChanged = onAssignChanged || $.noop;
+        this.onAssignChange = onAssignChange || $.noop;
     }
     CreateController.prototype = {
-        addUser: addUser,
         deleteUser: deleteUser,
         checkEmailUnique: checkEmailUnique,
         sortUsers: sortUsers,
@@ -67,29 +66,19 @@
         addResetView: addResetView
     };
 
-    function addUser(newUser) {
-        if (this.checkEmailUnique(newUser)) {
-            this._usersList.push(newUser);
-            this.resetView();
-            return true;
-        }
-        else {
-            alert("User with this email already exist");
-        }
-    }
-
     function deleteUser(user) {
-        var index = this._usersList.indexOf(user);
-        this._onUserDeleted(this._usersList.splice(index, 1)[0]);
+        var index = this.getUsersList().indexOf(user);
+        this._onUserDeleted(this.getUsersList().splice(index, 1)[0]);
         this.resetView();
     }
 
     function checkEmailUnique(user) {
-        return arrayUtils.findInArray(this._usersList, {email: user.email});
+        return arrayUtils.findInArray(this.getUsersList(), {email: user.email});
     }
 
     function sortUsers(field, direction) {
-        arrayUtils.sortArray(this._usersList, field, direction);
+        arrayUtils.sortArray(this.getUsersList(), field, direction);
+        this.resetView();
     }
 
     function getUsersList() {

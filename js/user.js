@@ -6,8 +6,8 @@
         createUser: createUser
     });
 
-    function createUser(user, onDelete, onAssignChanged) {
-        var controller =  new CreateController(user, onDelete, onAssignChanged);
+    function createUser(user, onDelete, onAssignChange) {
+        var controller =  new CreateController(user, onDelete, onAssignChange);
         return createView(controller);
     }
 
@@ -39,10 +39,10 @@
         return $viewTemplate;
     }
 
-    function CreateController(user, onDelete, onAssignChanged) {
+    function CreateController(user, onDelete, onAssignChange) {
         this._user = user || {};
         this._onDelete = onDelete || $.noop;
-        this._onAssignChanged = onAssignChanged || $.noop;
+        this._onAssignChange = onAssignChange || $.noop;
     }
     CreateController.prototype = {
         deleteUser: deleteUser,
@@ -51,8 +51,7 @@
     };
 
     function changeAssign(value) {
-        this._user.assigned = value;
-        this._onAssignChanged(this._user);
+        this._onAssignChange(this._user, value);
     }
 
     function deleteUser() {

@@ -10,8 +10,8 @@
 	var taskModule = app.getModule("task");
 	var arrayUtils = app.getModule("arrayUtils");
 
-	function createTasksList(tasksList, onTaskDeleted, onTaskCompleted) {
-		var controller =  new CreateController(tasksList, onTaskDeleted, onTaskCompleted);
+	function createTasksList(tasksList, onTaskDeleted, onTaskCompleted, onTaskActive) {
+		var controller =  new CreateController(tasksList, onTaskDeleted, onTaskCompleted, onTaskActive);
 		return createView(controller);
 	}
 
@@ -22,21 +22,32 @@
             <div class="tasksList">\
                 <div>\
                     Sort by name:\
-                        <button class="sortByUserNameAscending" type="button">A...z</button>\
-                        <button class="sortByUserNameDescending" type="button">Z...a</button>\
+					<button class="sortByTitleAscending" type="button">A...z</button>\
+                    <button class="sortByTitleDescending" type="button">Z...a</button>\
                 </div>\
+					Sort by date:\
+                    <button class="sortByDateAscending" type="button">First...last</button>\
+                    <button class="sortByDateDescending" type="button">Last...first</button>\
                 <ul></ul>\
             </div>'
 		);
 
 		var $listContainer = $viewTemplate.find("ul");
 
-		$viewTemplate.find(".sortByUserNameAscending").on("click", function() {
-			controller.sortUsers("name", "ascending");
+		$viewTemplate.find(".sortByTitleAscending").on("click", function() {
+			controller.sortTasks("title", "ascending");
 		});
 
-		$viewTemplate.find(".sortByUserNameDescending").on("click", function() {
-			controller.sortUsers("name", "descending");
+		$viewTemplate.find(".sortByTitleDescending").on("click", function() {
+			controller.sortTasks("title", "descending");
+		});
+
+		$viewTemplate.find(".sortByDateAscending").on("click", function() {
+			controller.sortTasks("createDate", "ascending");
+		});
+
+		$viewTemplate.find(".sortByDateDescending").on("click", function() {
+			controller.sortTasks("createDate", "descending");
 		});
 
 		controller.addResetView(buildTasksList);
@@ -50,7 +61,8 @@
 					controller.deleteTask.bind(controller),
 					controller.moveTop.bind(controller),
 					controller.moveBottom.bind(controller),
-					controller.completeTask.bind(controller)
+					controller.completeTask.bind(controller),
+					controller.activeTask.bind(controller)
 				));
 			})
 		}
@@ -58,10 +70,11 @@
 		return $viewTemplate;
 	}
 
-	function CreateController(tasksList, onTaskDeleted, onTaskCompleted) {
+	function CreateController(tasksList, onTaskDeleted, onTaskCompleted, onTaskActive) {
 		this._tasksList = tasksList || [];
 		this._onTaskDeleted = onTaskDeleted || $.noop;
 		this._onTaskCompleted = onTaskCompleted || $.noop;
+		this._onTaskActive = onTaskActive || $.noop;
 	}
 	CreateController.prototype = {
 		deleteTask: deleteTask,
@@ -70,17 +83,18 @@
 		moveTop: moveTop,
 		moveBottom: moveBottom,
 		completeTask: completeTask,
+		activeTask: activeTask,
 		addResetView: addResetView
 	};
 
 	function deleteTask(task) {
-		var index = this._tasksList.indexOf(task);
-		this._onTaskDeleted(this._tasksList.splice(index, 1)[0]);
+		var index = this.getTasksList().indexOf(task);
+		this._onTaskDeleted(this.getTasksList().splice(index, 1)[0]);
 		this.resetView();
 	}
 
 	function sortTasks(field, direction) {
-		arrayUtils.sortArray(this._tasksList, field, direction);
+		arrayUtils.sortArray(this.getTasksList(), field, direction);
 		this.resetView();
 	}
 
@@ -88,18 +102,38 @@
 		return this._tasksList;
 	}
 
-	function moveTop() {
-
+	function moveTop(task) {
+		if (!task.completed) {
+			var index = this.getTasksList().indexOf(task);
+			if (index > 0) {
+				this._tasksList.splice(index - 1, 0, this._tasksList.splice(index, 1)[0]);
+				this.resetView();
+			}
+		}
 	}
 
-	function moveBottom() {
-
+	function moveBottom(task) {
+		if (!task.completed) {
+			var index = this.getTasksList().indexOf(task);
+			if (index < this.getTasksList().length - 1) {
+				this._tasksList.splice(index + 1, 0, this._tasksList.splice(index, 1)[0]);
+				this.resetView();
+			}
+		}
 	}
 
 	function completeTask(task) {
-		var index = this._tasksList.indexOf(task);
-		task.completed = true;
-		this._onTaskCompleted(task);
+		if (!task.completed) {
+			var index = this.getTasksList().indexOf(task);
+			this.getTasksList().push(this.getTasksList().splice(index, 1)[0]);
+			task.completed = true;
+			this._onTaskCompleted(task);
+			this.resetView();
+		}
+	}
+
+	function activeTask(task) {
+		this._onTaskActive(task);
 	}
 
 	function addResetView(resetView) {

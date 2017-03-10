@@ -38,12 +38,18 @@
         return $viewTemplate;
     }
 
+    function getUserModel() {
+        return {
+            name: "",
+            email: "",
+            assigned: false,
+            assignedTo: []
+        }
+    }
+
     function CreateController(onAddUser) {
         this._onAddUser = onAddUser;
-        this._userModel = {
-            name: "",
-            email: ""
-        }
+        this._userModel = getUserModel();
     }
     CreateController.prototype = {
         addUser: addUser,
@@ -52,15 +58,10 @@
     };
 
     function addUser(userName, userEmail) {
-        this._userModel = {
-            name: userName,
-            email: userEmail
-        };
+        this._userModel.name = userName;
+        this._userModel.email = userEmail;
         if (this.validateForm() && this._onAddUser(this._userModel)) {
-            this._userModel = {
-                name: "",
-                email: ""
-            };
+            this._userModel = getUserModel();
             this.resetView();
         }
     }

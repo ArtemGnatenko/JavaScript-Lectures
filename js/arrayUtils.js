@@ -21,7 +21,7 @@
                 return sortText(a[field], b[field]);
             })
         }
-        if (direction === 'ascending') {
+        if (direction === 'descending') {
             array.reverse();
         }
     }
