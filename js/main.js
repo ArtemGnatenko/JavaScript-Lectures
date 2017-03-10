@@ -4,9 +4,9 @@
     var users = [];
     $("h1").after(addUserForm.createAddUserForm(function (user) {
         users.push(user);
-        $(".addUser").after(usersList.createUsersList(users));
+		usersList.refreshView();
         return true;
-    }));
+    })).next().after(usersList.createUsersList(users));
 
 
 })();

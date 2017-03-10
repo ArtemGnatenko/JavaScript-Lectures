@@ -8,14 +8,14 @@
     });
 
     var arrayUtils = app.getModule("arrayUtils");
+    var userModule = app.getModule("user");
 
-    function createUsersList(usersList, onUserAdded, onUserDeleted, onAssignChanged) {
-        var controller =  new CreateController(usersList, onUserAdded, onUserDeleted, onAssignChanged);
+    function createUsersList(usersList, onUserDeleted, onAssignChanged) {
+        var controller =  new CreateController(usersList, onUserDeleted, onAssignChanged);
         return createView(controller);
     }
 
     function createView(controller) {
-        var userCreate = app.getModule("user").createUser;
         var usersList = controller.getUsersList();
 
         var $viewTemplate = $('\
@@ -46,16 +46,15 @@
         function buildUsersList() {
             $listContainer.empty();
             usersList.forEach(function (user) {
-                $listContainer.append(userCreate(user, controller.deleteUser.bind(controller), controller.onAssignChanged));
+                $listContainer.append(userModule.createUser(user, controller.deleteUser.bind(controller), controller.onAssignChanged));
             })
         }
 
         return $viewTemplate;
     }
 
-    function CreateController(usersList, onUserAdded, onUserDeleted, onAssignChanged) {
+    function CreateController(usersList, onUserDeleted, onAssignChanged) {
         this._usersList = usersList || [];
-        this._onUserAdded = onUserAdded || $.noop;
         this._onUserDeleted = onUserDeleted || $.noop;
         this.onAssignChanged = onAssignChanged || $.noop;
     }
